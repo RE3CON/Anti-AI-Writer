@@ -50,6 +50,9 @@ export default function App() {
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [customApiKey, setCustomApiKey] = useState<string>(() => {
+    return localStorage.getItem('laboratory_gemini_api_key') || '';
+  });
 
   // 1. Chat Lab State
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -116,6 +119,14 @@ export default function App() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages]);
 
+  useEffect(() => {
+    if (customApiKey) {
+      localStorage.setItem('laboratory_gemini_api_key', customApiKey);
+    } else {
+      localStorage.removeItem('laboratory_gemini_api_key');
+    }
+  }, [customApiKey]);
+
   const checkConnection = async () => {
     try {
       setApiConnected(null);
@@ -173,59 +184,119 @@ export default function App() {
     setChatMessages(prev => [...prev, modelMsgPlaceholder]);
 
     try {
-      // Use Server-Sent Events for realistic streaming
-      const response = await fetch('/api/gemini/stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: chatMessages.slice(-5).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n') + `\nUser: ${userMsg.content}`,
-          model: chatModel,
-          config: {
-            systemInstruction,
-            temperature,
-            topP,
-          }
-        })
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Failed to generate response');
-      }
-
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      if (!reader) throw new Error('No reader available');
-
+      let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
       let accumulatedContent = '';
+      const decoder = new TextDecoder();
 
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-
-        const chunkText = decoder.decode(value);
-        const lines = chunkText.split('\n');
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const dataStr = line.slice(6).trim();
-            if (dataStr === '[DONE]') continue;
-            try {
-              const parsed = JSON.parse(dataStr);
-              if (parsed.text) {
-                accumulatedContent += parsed.text;
-                // Update model message in place
-                setChatMessages(prev => prev.map(msg => {
-                  if (msg.id === modelMsgId) {
-                    return { ...msg, content: accumulatedContent };
-                  }
-                  return msg;
-                }));
-              } else if (parsed.error) {
-                throw new Error(parsed.error);
+      if (customApiKey) {
+        // Direct Client-side Gemini API call via Server-Sent Events (SSE)
+        const chatPrompt = chatMessages.slice(-5).map(m => `${m.role === 'user' ? 'user' : 'model'}: ${m.content}`).join('\n') + `\nuser: ${userMsg.content}`;
+        const sseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${chatModel}:streamGenerateContent?key=${customApiKey}&alt=sse`;
+        
+        const response = await fetch(sseUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: `${systemInstruction}\n\nConversation history:\n${chatPrompt}` }]
               }
-            } catch (e) {
-              // Ignore partial JSON parse errors
+            ],
+            generationConfig: {
+              temperature,
+              topP,
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData[0]?.error?.message || errData.error?.message || 'Failed client-side generation');
+        }
+
+        reader = response.body?.getReader();
+        if (!reader) throw new Error('No reader available');
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          const chunkText = decoder.decode(value);
+          const lines = chunkText.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const dataStr = line.slice(6).trim();
+              try {
+                const parsed = JSON.parse(dataStr);
+                const textPart = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (textPart) {
+                  accumulatedContent += textPart;
+                  setChatMessages(prev => prev.map(msg => {
+                    if (msg.id === modelMsgId) {
+                      return { ...msg, content: accumulatedContent };
+                    }
+                    return msg;
+                  }));
+                }
+              } catch (e) {
+                // Ignore partial chunk JSON parse errors
+              }
+            }
+          }
+        }
+      } else {
+        // Use Server-Sent Events for realistic streaming via the server proxy
+        const response = await fetch('/api/gemini/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: chatMessages.slice(-5).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n') + `\nUser: ${userMsg.content}`,
+            model: chatModel,
+            config: {
+              systemInstruction,
+              temperature,
+              topP,
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Failed to generate response');
+        }
+
+        reader = response.body?.getReader();
+        if (!reader) throw new Error('No reader available');
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          const chunkText = decoder.decode(value);
+          const lines = chunkText.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const dataStr = line.slice(6).trim();
+              if (dataStr === '[DONE]') continue;
+              try {
+                const parsed = JSON.parse(dataStr);
+                if (parsed.text) {
+                  accumulatedContent += parsed.text;
+                  setChatMessages(prev => prev.map(msg => {
+                    if (msg.id === modelMsgId) {
+                      return { ...msg, content: accumulatedContent };
+                    }
+                    return msg;
+                  }));
+                } else if (parsed.error) {
+                  throw new Error(parsed.error);
+                }
+              } catch (e) {
+                // Ignore partial JSON parse errors
+              }
             }
           }
         }
@@ -259,25 +330,54 @@ export default function App() {
 
     setIsGenerating(true);
     try {
-      const res = await fetch('/api/gemini/image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: imagePrompt,
-          aspectRatio: imageAspectRatio,
-          imageSize: imageSize,
-          model: imageModel
-        })
-      });
+      let imageUrl = '';
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to generate image');
+      if (customApiKey) {
+        // Direct Client-side Gemini Imagen call
+        const directUrl = `https://generativelanguage.googleapis.com/v1beta/models/${imageModel}:generateImages?key=${customApiKey}`;
+        const response = await fetch(directUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            numberOfImages: 1,
+            prompt: imagePrompt,
+            aspectRatio: imageAspectRatio,
+            outputMimeType: 'image/png'
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error?.message || 'Failed to generate image client-side');
+        }
+
+        const base64Bytes = data.generatedImages?.[0]?.image?.imageBytes;
+        if (!base64Bytes) {
+          throw new Error('No image bytes returned from Imagen API');
+        }
+        imageUrl = `data:image/png;base64,${base64Bytes}`;
+      } else {
+        const res = await fetch('/api/gemini/image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: imagePrompt,
+            aspectRatio: imageAspectRatio,
+            imageSize: imageSize,
+            model: imageModel
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to generate image');
+        }
+        imageUrl = data.image;
       }
 
       const newImage: GeneratedImage = {
         id: Math.random().toString(),
-        url: data.image,
+        url: imageUrl,
         prompt: imagePrompt,
         timestamp: new Date(),
         model: imageModel,
@@ -382,22 +482,56 @@ export default function App() {
     setExtractedData(null);
 
     try {
-      const res = await fetch('/api/gemini/extract', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: extractorText,
-          schema: schema,
-          promptDescription: extractorPrompt
-        })
-      });
+      let resultData: any;
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to extract structured data');
+      if (customApiKey) {
+        // Direct Client-side structured extraction call
+        const directUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${customApiKey}`;
+        const response = await fetch(directUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [{ text: `${extractorPrompt}\n\nRaw Text Source:\n${extractorText}` }]
+              }
+            ],
+            generationConfig: {
+              responseMimeType: 'application/json',
+              responseSchema: schema
+            }
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error?.message || 'Failed client-side extraction');
+        }
+
+        const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!rawText) {
+          throw new Error('No structured text returned from client-side Gemini');
+        }
+        resultData = JSON.parse(rawText.trim());
+      } else {
+        const res = await fetch('/api/gemini/extract', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: extractorText,
+            schema: schema,
+            promptDescription: extractorPrompt
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to extract structured data');
+        }
+        resultData = data.data;
       }
 
-      setExtractedData(data.data);
+      setExtractedData(resultData);
     } catch (err: any) {
       alert(`Extraction Failed: ${err.message}`);
     } finally {
@@ -418,26 +552,58 @@ Your response MUST be ONLY a single cohesive HTML document containing inline tai
 Make it exceptionally gorgeous (using rich borders, modern dark or light palettes, micro-interactions, subtle glassmorphic shadows, state toggles, and lovely typography).
 IMPORTANT: DO NOT wrapping your code in generic Markdown blocks unless required, but ideally just return the clean HTML directly. In case you do return markdown blocks like \`\`\`html, I will extract it, but output ONLY the valid full HTML document code.`;
 
-      const res = await fetch('/api/gemini/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: sandboxPrompt,
-          model: 'gemini-3.1-pro-preview', // Pro model for complex coding tasks
-          config: {
-            systemInstruction: systemPrompt,
-            temperature: 0.3 // Low temperature for code accuracy
-          }
-        })
-      });
+      let rawText = '';
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to generate code');
+      if (customApiKey) {
+        // Direct Client-side Gemini code compilation call
+        // We use gemini-2.5-flash as it is extremely capable for interactive single-page app coding tasks
+        const directUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${customApiKey}`;
+        const response = await fetch(directUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [{ text: sandboxPrompt }]
+              }
+            ],
+            systemInstruction: {
+              parts: [{ text: systemPrompt }]
+            },
+            generationConfig: {
+              temperature: 0.3
+            }
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error?.message || 'Failed client-side code synthesis');
+        }
+
+        rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      } else {
+        const res = await fetch('/api/gemini/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: sandboxPrompt,
+            model: 'gemini-3.1-pro-preview', // Pro model for complex coding tasks
+            config: {
+              systemInstruction: systemPrompt,
+              temperature: 0.3 // Low temperature for code accuracy
+            }
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to generate code');
+        }
+        rawText = data.text || '';
       }
 
       // Extract HTML from potential markdown wraps
-      let rawText = data.text || '';
       let cleanCode = rawText;
       
       const mdRegex = /```html\s*([\s\S]*?)\s*```/;
@@ -635,7 +801,15 @@ IMPORTANT: DO NOT wrapping your code in generic Markdown blocks unless required,
             <div className="flex items-center gap-2">
               <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
               <span>
-                <strong>System Gateway Offline:</strong> {connectionError || 'Gemini API key is unconfigured. Please declare process.env.GEMINI_API_KEY.'}
+                {window.location.hostname.includes('github.io') ? (
+                  <span>
+                    <strong>Static Pages Mode:</strong> The full-stack Express API Gateway is offline. Please enter a <strong className="text-blue-700">Client-Side Gemini API Key</strong> in the Chat Lab Parameters (Configure) to run all laboratories directly from your browser!
+                  </span>
+                ) : (
+                  <span>
+                    <strong>System Gateway Offline:</strong> {connectionError || 'Gemini API key is unconfigured. Please declare process.env.GEMINI_API_KEY.'}
+                  </span>
+                )}
               </span>
             </div>
             <button 
@@ -745,6 +919,23 @@ IMPORTANT: DO NOT wrapping your code in generic Markdown blocks unless required,
                           className="w-full border border-slate-200 rounded-xl p-3 text-xs focus:outline-none focus:border-blue-500 font-medium"
                           placeholder="Inject default personality, rules, constraints..."
                         />
+                        <div className="mt-3">
+                          <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-1.5 flex items-center justify-between">
+                            <span>Client-Side Gemini API Key (Optional)</span>
+                            {customApiKey ? (
+                              <span className="text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-full">✓ Saved Locally</span>
+                            ) : (
+                              <span className="text-[9px] text-amber-600 font-bold bg-amber-50 px-1.5 py-0.5 rounded-full">Required for GitHub Pages</span>
+                            )}
+                          </label>
+                          <input 
+                            type="password"
+                            value={customApiKey}
+                            onChange={(e) => setCustomApiKey(e.target.value)}
+                            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-500 font-medium font-mono"
+                            placeholder="AIzaSy... (Saved in browser storage)"
+                          />
+                        </div>
                       </div>
                       <div className="space-y-4">
                         <div>
