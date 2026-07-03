@@ -1,6 +1,6 @@
 {
-  "name": "Gemini AI Laboratory",
-  "description": "A high-end development laboratory and creative workspace powered by Google Gemini. Features interactive chat playground, image studio, structured JSON extractor, interactive code sandbox, and curated prompts.",
+  "name": "AI Footprint Scrub",
+  "description": "An ultra-polished interactive prompt collection and builder designed to purge robotic AI patterns. Features 37 deep-dive humanizer personas and 5 micro-scrub modifiers to assemble copy-ready instructions instantly.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

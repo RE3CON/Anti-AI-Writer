@@ -1,70 +1,45 @@
-# Gemini AI Laboratory 🧪✨
+# AI Footprint Scrub & Text Humanizer 🧼✨
 
-Welcome to the **Gemini AI Laboratory**, a high-end development workspace and creative AI staging environment powered by the Google Gemini SDK (`@google/genai`). 
-
-This workspace is designed to unlock advanced AI capabilities—including dynamic text generation, structured data mining, high-fidelity asset rendering, and interactive sandbox compilers—directly from a unified, full-stack environment.
+Welcome to the **AI Footprint Scrub**, an advanced, production-grade text humanizer, bypasser, and editor suite. This application is engineered to completely purge the predictable markers, robotic vocabulary, and uniform pacing typical of LLM-generated text (such as ChatGPT, Claude, and Gemini), restoring an authentic, high-impact human voice to your content.
 
 ---
 
-## 🚀 Key Architectural Highlights
+## 🎨 Core Visual & Functional Features
 
-- **Server-Side Security**: All Gemini API interactions are secured server-side in `server.ts` to keep your API keys private. No client-side exposure.
-- **Realistic Streams**: Leverages Server-Sent Events (SSE) to deliver high-performance real-time chat completions directly to the frontend.
-- **Dynamic CSS Sandbox**: Generates fully-styled interactive mini-applications on-the-fly and loads them in an isolated `iframe` sandbox stage.
-- **Structured Outputs**: Native support for strict JSON schema verification to convert raw, unstructured logs, business cards, or receipts into strict data structures.
+### 1. 37 Deep-Dive Humanizer Personas
+We have curated a library of **37 distinct professional, creative, and academic writing personas**, categorized cleanly into four main hubs:
+- 💥 **Marketing & Copywriting**: Startups, sales landings, B2B SaaS pragmatists, direct response (Hook & Slide).
+- 🎓 **Academic & Professional**: Surgical editors, technical documentation specialists, realist biographers, legal translators, and scientific skeptics.
+- 🗣️ **Conversational & Social**: Ghostwriters, Reddit/forum natives, Quora experts, and LinkedIn thought leaders (no cringe!).
+- 🎙️ **Creative & Scriptwriting**: Raw storytellers, late-night radio hosts, TED Keynote speakers, Wong Fu-style vloggers, and culinary writers.
 
----
+### 2. 5 Micro-Scrub Modifiers (Overlays)
+Apply individual overlay constraints on top of any persona:
+- **The Vocabulary Scrub**: Instantly block the biggest AI giveaways (`delve`, `leverage`, `tapestry`, `foster`, `testament`, `pivot`, `utilize`, `holistic`, etc.).
+- **The Burstiness Rhythm**: Mix extremely short, punchy sentences with longer flowing clauses to break uniform robotic cadence.
+- **No Throat-Clearing**: Completely trim redundant, generic warm-ups or introductory sentences and start with the core value point.
+- **The Coffee Shop Style**: Transform stuffy corporate language into a casual, authoritative voice-note tone.
+- **The De-Hyping Filter**: Strip all hyperbole, cliché metaphors, and unearned motivational filler.
 
-## 🛠️ The Workspace Lab Suites
+### 3. Real-Time Footprint Contrast Panel & Thesaurus
+- **Footprint Highlights**: Displays input and output side-by-side with color-coded markers, highlighting detected AI slop words in red and showing their clean human equivalents in green.
+- **Contrast Dictionary**: An interactive live table displaying the exact slop words found, their custom human synonyms, and their purge status (✨ *Cleaned!*).
 
-### 1. Speech & Chat Lab
-- **About**: An advanced playground for conversational synthesis, system instruction overriding, and parameter tuning (Temperature, Top-P, and nucleus sampling controls).
-- **How to Use It**:
-  1. Set your preferred model from the dropdown (defaults to `gemini-3.5-flash`).
-  2. Toggle **Configure** to adjust creative parameters or insert a custom **System Instruction** (e.g., *“You are an expert financial consultant…”*).
-  3. Optional: Enable **Auto-Copy Responses** inside settings to instantly copy finalized model code blocks/replies to your clipboard.
-  4. Type your prompt into the bottom bar and click **Send**.
-
-### 2. AI Image Design Studio
-- **About**: A creative graphic stage utilizing Google's advanced image generation models to render custom assets, vectors, background layers, and logos.
-- **How to Use It**:
-  1. Provide a detailed, highly descriptive prompt (e.g., *“Cute isometric 3D render of a golden retriever astronaut, pastel color palette”*).
-  2. Choose your target **Aspect Ratio** (`1:1`, `16:9`, `9:16`, `4:3`, or `3:4`) and the preferred rendering engine.
-  3. Click **Synthesize Image Asset**. The image will be generated server-side and appear on the execution stage, where you can instantly click **Save Asset** to download it.
-
-### 3. Structured Data Extractor
-- **About**: A powerful pipeline built on Gemini’s strict JSON output capability. It converts noisy, unstructured text into valid, production-ready JSON schemas.
-- **How to Use It**:
-  1. Select an extraction preset (e.g., **Receipt/Bill**, **Contact Card**, **Action Checklist**) or choose **Custom Schema** to input your own custom JSON structure.
-  2. Paste your raw, messy text into the **Raw Text Content Source** field (e.g., a messy email signature, OCR scan, or meeting notes).
-  3. Click **Synthesize JSON Payload**. The system will output a perfectly formatted JSON object that is fully copyable with a single click.
-
-### 4. Prompt-to-App Sandbox Compiler
-- **About**: An advanced, pro-tier design compiler that generates self-contained interactive web widgets on-the-fly, parses them, and loads them inside an execution stage.
-- **How to Use It**:
-  1. Input a feature request or layout you want compiled (e.g., *“A glowing neon circular pomodoro timer with sound effects and customizable intervals”*).
-  2. Click **Compile**. The backend will generate a standalone HTML document utilizing Tailwind CSS via CDN and functional vanilla JS.
-  3. Inspect the code on the left editor tab, and interact with the live execution stage on the right! You can click **Reload Widget** at any time to reboot the live sandboxed page.
-
-### 5. Curated Prompt Blueprints
-- **About**: A collection of pre-designed prompt blueprints optimized for visual styling, software architecture planning, high-end illustration, and raw data extraction.
-- **How to Use It**:
-  - Click **Inject Prompt** on any card. The system will automatically select the matching lab environment, fill the prompt field, and navigate you directly to that laboratory.
+### 4. Cadence & Authenticity Analytics
+- **Human Authenticity Score**: A 0-100% metric calculated from the frequency of robotic giveaway words, uniform sentence loops, and active pacing.
+- **Sentence Burstiness Meter**: Calculates the mathematical standard deviation of sentence lengths in real-time, showing whether the rhythm is naturally human or uniformly robotic.
+- **Average Sentence Stats**: Compares structural length and sentence counts between your original draft and humanized output.
 
 ---
 
-## ⚙️ Development & Quickstart
+## ⚙️ Secure Full-Stack Architecture
 
-### Prerequisites
-Before running, ensure you have your Gemini API Key set in your workspace secrets.
+- **Secure API Proxy**: Gemini API requests are streamed securely via Server-Sent Events (SSE) server-side in `server.ts` to fully shield system API keys.
+- **Direct Client-Side Key Bypassing**: Includes a dedicated bottom setup drawer for adding your own local Gemini API Key (`AIzaSy...`). When active, all requests bypass the server quota entirely, fetching stream completions directly client-side for unlimited, fast execution!
 
-### Environment Setup (`.env`)
-Create a `.env` file (or set via settings dashboard):
-```env
-GEMINI_API_KEY="your-google-gemini-api-key"
-```
+---
 
-### Script Directory
+## 🚀 Commands & Development
 
 - `npm run dev`: Boots up the server-side compiler and frontend livereload in TypeScript environment mode.
 - `npm run build`: Bundles the React application and compiles `server.ts` into a fast-loading production-ready file.
