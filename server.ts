@@ -164,9 +164,10 @@ async function startServer() {
       }
     });
   } else {
-    app.use(express.static(path.resolve('./dist')));
+    const outDir = fs.existsSync(path.resolve('./docs')) ? './docs' : './dist';
+    app.use(express.static(path.resolve(outDir)));
     app.get('*', (req, res) => {
-      res.sendFile(path.resolve('./dist/index.html'));
+      res.sendFile(path.resolve(outDir, 'index.html'));
     });
   }
 
