@@ -2,5 +2,5 @@
   "name": "AI Footprint Scrub",
   "description": "An ultra-polished interactive prompt collection and builder designed to purge robotic AI patterns. Features 37 deep-dive humanizer personas and 5 micro-scrub modifiers to assemble copy-ready instructions instantly.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }
