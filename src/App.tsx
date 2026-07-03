@@ -45,7 +45,7 @@ interface GeneratedImage {
 
 export default function App() {
   // Navigation & Global State
-  const [activeTab, setActiveTab] = useState<'chat' | 'image' | 'extract' | 'sandbox' | 'prompts'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'image' | 'extract' | 'sandbox' | 'prompts' | 'help'>('chat');
   const [apiConnected, setApiConnected] = useState<boolean | null>(null);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -600,6 +600,19 @@ IMPORTANT: DO NOT wrapping your code in generic Markdown blocks unless required,
               <BookOpen className="h-4.5 w-4.5" />
               <span>Curated Prompts Library</span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('help')}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all ${
+                activeTab === 'help' 
+                  ? 'bg-blue-50 text-blue-700' 
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+              id="tab_help_btn"
+            >
+              <Info className="h-4.5 w-4.5" />
+              <span>User Guide & About</span>
+            </button>
           </nav>
         </div>
 
@@ -648,6 +661,7 @@ IMPORTANT: DO NOT wrapping your code in generic Markdown blocks unless required,
               {activeTab === 'extract' && 'Structured Data Extraction'}
               {activeTab === 'sandbox' && 'Prompt-to-App Sandbox Compiler'}
               {activeTab === 'prompts' && 'Optimized Prompt Templates'}
+              {activeTab === 'help' && 'System Guide & Laboratory Manual'}
             </h2>
           </div>
 
@@ -1432,6 +1446,141 @@ Twitter: @consulting_sherlock`
                       </div>
                     </div>
                   ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* TAB F: SYSTEM GUIDE & LABORATORY MANUAL */}
+            {activeTab === 'help' && (
+              <motion.div 
+                key="help-tab"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="max-w-5xl mx-auto space-y-8"
+                id="help_manual_panel"
+              >
+                {/* Intro Hero Banner */}
+                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                    <Cpu className="h-40 w-40" />
+                  </div>
+                  <div className="max-w-2xl space-y-4">
+                    <span className="text-[10px] uppercase font-bold tracking-widest bg-blue-500/50 px-3 py-1 rounded-full text-blue-100">Official Manual</span>
+                    <h3 className="text-2xl font-bold tracking-tight">Welcome to the Gemini AI Laboratory</h3>
+                    <p className="text-xs text-blue-100 leading-relaxed font-medium">
+                      The Laboratory is a premium full-stack development environment designed for real-time generative intelligence modeling, structure parsing, and runtime sandbox execution. Securely proxying all traffic to avoid exposing credentials.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Main Content Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  
+                  {/* Left Column - Navigation Guidelines */}
+                  <div className="md:col-span-2 space-y-6">
+                    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                      <h4 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <Terminal className="h-5 w-5 text-blue-600" />
+                        <span>Interactive Laboratories & How to Run Them</span>
+                      </h4>
+
+                      <div className="space-y-6">
+                        {/* Lab 1 */}
+                        <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-2">
+                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">Lab Suite 01</span>
+                          <h5 className="text-xs font-bold text-slate-800">Speech & Chat Lab</h5>
+                          <p className="text-[11px] text-slate-500 leading-relaxed font-semibold">
+                            An active modeling playground supporting system parameter overrides (temperature and nucleus topP), advanced instruction framing, and direct model swaps.
+                          </p>
+                          <div className="text-[11px] text-slate-600 font-medium pl-3 border-l-2 border-blue-200 mt-2">
+                            <strong>Step-by-step:</strong> Enter system parameter limits, select a language model, define background instructions, and stream completions. Enable <em>Auto-Copy</em> to automatically buffer finalized answers.
+                          </div>
+                        </div>
+
+                        {/* Lab 2 */}
+                        <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-2">
+                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">Lab Suite 02</span>
+                          <h5 className="text-xs font-bold text-slate-800">AI Image Design Studio</h5>
+                          <p className="text-[11px] text-slate-500 leading-relaxed font-semibold">
+                            A high-fidelity render stage configured with pixel ratio scaling and aspect model selection for generating custom website illustrations, mockups, or background tiles.
+                          </p>
+                          <div className="text-[11px] text-slate-600 font-medium pl-3 border-l-2 border-blue-200 mt-2">
+                            <strong>Step-by-step:</strong> Write structural descriptions of graphics (e.g., isometric room layouts), choose ratios like 16:9 or 9:16, click synthesize, and click save asset to download output as base64 png format.
+                          </div>
+                        </div>
+
+                        {/* Lab 3 */}
+                        <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-2">
+                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">Lab Suite 03</span>
+                          <h5 className="text-xs font-bold text-slate-800">Structured Data Extractor</h5>
+                          <p className="text-[11px] text-slate-500 leading-relaxed font-semibold">
+                            A strict JSON parsing system utilizing raw JSON schema declarations at inference to transform messy OCR text, signatures, or transcript arrays into strictly valid client payloads.
+                          </p>
+                          <div className="text-[11px] text-slate-600 font-medium pl-3 border-l-2 border-blue-200 mt-2">
+                            <strong>Step-by-step:</strong> Choose a preset parser (Receipt, Contact Card, or Task list) or toggle <em>Custom Schema</em> to input custom keys, paste unstructured input text, and export the valid structured JSON.
+                          </div>
+                        </div>
+
+                        {/* Lab 4 */}
+                        <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl space-y-2">
+                          <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider block">Lab Suite 04</span>
+                          <h5 className="text-xs font-bold text-slate-800">Interactive Code Sandbox Compiler</h5>
+                          <p className="text-[11px] text-slate-500 leading-relaxed font-semibold">
+                            An advanced prompt-to-app generator that produces fully-styled standalone HTML/JS widgets based on text descriptions, then renders them in real-time execution canvas frames.
+                          </p>
+                          <div className="text-[11px] text-slate-600 font-medium pl-3 border-l-2 border-blue-200 mt-2">
+                            <strong>Step-by-step:</strong> Specify features (e.g., interactive weather slider, scientific calculators), compile the app, view generated source code on the left editor, and test features interactively on the live stage.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column - Architecture & Quick Tips */}
+                  <div className="space-y-6">
+                    {/* Architecture Stats */}
+                    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+                      <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Gateway Configuration</h4>
+                      
+                      <div className="space-y-3 text-[11px] font-semibold text-slate-600">
+                        <div className="flex justify-between py-1.5 border-b border-slate-100">
+                          <span>Tenant Environment</span>
+                          <span className="font-mono text-slate-800">Cloud Run Ingress</span>
+                        </div>
+                        <div className="flex justify-between py-1.5 border-b border-slate-100">
+                          <span>Secure Proxy Port</span>
+                          <span className="font-mono text-slate-800">3000</span>
+                        </div>
+                        <div className="flex justify-between py-1.5 border-b border-slate-100">
+                          <span>Routing Mechanism</span>
+                          <span className="font-mono text-slate-800">Server-Side SDK</span>
+                        </div>
+                        <div className="flex justify-between py-1.5">
+                          <span>API Isolation</span>
+                          <span className="text-emerald-600">100% Isolated</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pro Tips Panel */}
+                    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+                      <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Helpful Usage Tips</h4>
+                      
+                      <ul className="space-y-3 text-[11px] font-semibold text-slate-500 leading-relaxed list-disc list-inside">
+                        <li>
+                          <strong className="text-slate-800">Offline Warning:</strong> If you see a connection warning, verify that your <code className="font-mono bg-slate-100 text-rose-600 px-1 rounded">GEMINI_API_KEY</code> is correctly set in Settings &gt; Secrets.
+                        </li>
+                        <li>
+                          <strong className="text-slate-800">Interactive Presets:</strong> Visit the <strong className="text-blue-600">Curated Prompts Library</strong> tab to instantly load premade configurations and test specific features with one click.
+                        </li>
+                        <li>
+                          <strong className="text-slate-800">Sandbox Code:</strong> Feel free to copy compiled sandbox source code blocks and paste them directly into standard text files for external deployment.
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
                 </div>
               </motion.div>
             )}
