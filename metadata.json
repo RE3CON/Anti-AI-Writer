@@ -1,0 +1,6 @@
+{
+  "name": "Gemini AI Laboratory",
+  "description": "A high-end development laboratory and creative workspace powered by Google Gemini. Features interactive chat playground, image studio, structured JSON extractor, interactive code sandbox, and curated prompts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
