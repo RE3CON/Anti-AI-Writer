@@ -25,7 +25,8 @@ import {
   RefreshCw,
   Eye,
   ArrowRight,
-  ArrowDown
+  ArrowDown,
+  Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -96,6 +97,70 @@ export default function App() {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const downloadJSONCatalog = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+      title: "Anti-AI Persona Catalog",
+      last_updated: "2026-07-03",
+      total_personas: HUMANIZER_PERSONAS.length,
+      total_modifiers: QUICK_SCRUBS.length,
+      modifiers: QUICK_SCRUBS,
+      personas: HUMANIZER_PERSONAS
+    }, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "anti_ai_personas_catalog.json");
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const downloadMarkdownCatalog = () => {
+    let md = `# 🧼 Anti-AI Persona & Writing Catalog\n\n`;
+    md += `This directory contains **${HUMANIZER_PERSONAS.length} Humanizer Personas** and **${QUICK_SCRUBS.length} Quick-Scrub Modifiers** designed to strip robotic cadences, corporate double-speak, and cliché LLM markers from AI output.\n\n`;
+    
+    md += `## 🚀 How to Use These Prompts\n`;
+    md += `1. Choose a Persona below that fits your desired writing style.\n`;
+    md += `2. Copy the System Prompt text completely.\n`;
+    md += `3. Paste it into ChatGPT, Claude, or Gemini.\n\n`;
+
+    md += `## ⚙️ Quick-Scrub Modifiers\n\n`;
+    QUICK_SCRUBS.forEach((scrub) => {
+      md += `### ${scrub.emoji} ${scrub.name}\n`;
+      md += `* **Description:** ${scrub.description}\n`;
+      md += `* **Prompt Modifier:**\n\`\`\`text\n${scrub.prompt}\n\`\`\`\n\n`;
+    });
+
+    md += `## 📂 37 Humanizer Personas\n\n`;
+    
+    const categories: Record<string, typeof HUMANIZER_PERSONAS> = {};
+    HUMANIZER_PERSONAS.forEach(p => {
+      if (!categories[p.category]) categories[p.category] = [];
+      categories[p.category].push(p);
+    });
+
+    for (const cat of Object.keys(categories)) {
+      md += `## 📁 Category: ${cat}\n\n`;
+      categories[cat].forEach(p => {
+        md += `### ${p.emoji} ${p.name}\n`;
+        md += `* Description: ${p.description}\n`;
+        md += `* Key Directives:\n`;
+        p.executionRules.forEach(rule => {
+          md += `  - ${rule}\n`;
+        });
+        md += `* System Prompt:\n\`\`\`text\n${p.systemPrompt}\n\`\`\`\n\n`;
+        md += `---\n\n`;
+      });
+    }
+
+    const dataStr = "data:text/markdown;charset=utf-8," + encodeURIComponent(md);
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "anti_ai_personas_catalog.md");
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
   };
 
   // Find active persona
@@ -327,13 +392,33 @@ Follow this specific custom direction: ${workshopCustomRules || 'Sound natural, 
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
-            <span className="text-[11px] font-mono font-bold text-slate-300 px-3 py-1 bg-slate-950/60 rounded-lg border border-slate-850">
-              📂 37 Persona Blueprints
-            </span>
-            <span className="text-[11px] font-mono font-bold text-amber-300 px-3 py-1">
-              ⚙️ 5 Modifiers
-            </span>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-2 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
+              <span className="text-[11px] font-mono font-bold text-slate-300 px-3 py-1 bg-slate-950/60 rounded-lg border border-slate-850">
+                📂 37 Persona Blueprints
+              </span>
+              <span className="text-[11px] font-mono font-bold text-amber-300 px-3 py-1">
+                ⚙️ 5 Modifiers
+              </span>
+            </div>
+            
+            <button 
+              onClick={downloadMarkdownCatalog}
+              title="Download full 37-persona catalog as Markdown (.md)"
+              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl border border-emerald-500/20 transition-all cursor-pointer shadow-lg shadow-emerald-950/20 hover:scale-102"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Download Catalog (.MD)</span>
+            </button>
+            
+            <button 
+              onClick={downloadJSONCatalog}
+              title="Download full dataset as JSON (.json)"
+              className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs px-3.5 py-2.5 rounded-xl border border-slate-700 transition-all cursor-pointer shadow-lg hover:scale-102"
+            >
+              <FileText className="h-3.5 w-3.5 text-indigo-400" />
+              <span>Download Dataset (.JSON)</span>
+            </button>
           </div>
         </div>
       </header>
