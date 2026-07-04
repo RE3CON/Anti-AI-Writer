@@ -1,0 +1,1 @@
+# Disable Jekyll build for GitHub Pages. This prevents the Jekyll build failure and serves raw compiled static files directly.
