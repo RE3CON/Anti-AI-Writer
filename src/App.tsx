@@ -1,3 +1,4 @@
+// AI Footprint Scrub - Anti-AI-Writer Workspace
 import React, { useState, useMemo } from 'react';
 import { 
   Sparkles, 
